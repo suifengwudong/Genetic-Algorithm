@@ -1,6 +1,5 @@
 import random
 from genetic_algorithm import GeneticAlgorithm
-from config import POP_SIZE, GENERATIONS, PATH
 from genetic_algorithm_gui import GeneticAlgorithmGUI
 from PyQt5.QtWidgets import QApplication
 import sys
@@ -13,6 +12,7 @@ CITY_NUM = len(CITY_COORDS)
 GENE_LENGTH = CITY_NUM
 POP_SIZE = 100         # 增加种群规模
 GENERATIONS = 300      # 增加进化代数
+ELITE_RATIO = 0.05     # 精英比例
 MUTATION_RATE = 0.02   # 降低变异率
 
 # 初始化算子：每个个体为城市排列
@@ -80,6 +80,7 @@ class TSPGUI(GeneticAlgorithmGUI):
             fitness_func=tsp_fitness,
             crossover_func=tsp_crossover,
             mutate_func=tsp_mutate,
+            elite_ratio=ELITE_RATIO,
             mutation_rate=MUTATION_RATE
         )
         super().__init__(ga=ga)

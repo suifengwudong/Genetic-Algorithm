@@ -5,8 +5,7 @@ from config import POP_SIZE, GENE_LENGTH, GENERATIONS
 from config import PATH
 
 # 默认算子定义
-
-def default_init(pop_size, gene_length):
+def default_init(pop_size, gene_length) -> Population:
     return Population(pop_size, gene_length)
 
 def default_fitness(individual):
@@ -33,16 +32,18 @@ class GeneticAlgorithm:
                  fitness_func=default_fitness,
                  crossover_func=default_crossover,
                  mutate_func=default_mutate,
+                 elite_ratio=0.05,
                  mutation_rate=0.1):
         self.mutation_rate = mutation_rate
         self.population = init_func(pop_size, gene_length)
         self.fitness_func = fitness_func
         self.crossover_func = crossover_func
         self.mutate_func = mutate_func
+        self.elite_ratio = elite_ratio
         self.generation = 0
         self.init_csv(PATH)
 
-    def selection(self, elite_ratio=0.05):
+    def selection(self):
         fits = [self.fitness_func(ind) for ind in self.population.get_individuals()]
         total_fit = sum(fits)
         probs = [f / total_fit for f in fits]
@@ -55,7 +56,7 @@ class GeneticAlgorithm:
                 if r <= acc:
                     selected_inds.append(self.population[i][:])
                     break
-        elite_num = max(1, int(self.population.pop_size * elite_ratio))
+        elite_num = max(1, int(self.population.pop_size * self.elite_ratio))
         sorted_inds = sorted(self.population.get_individuals(), key=self.fitness_func, reverse=True)
         elites = [ind[:] for ind in sorted_inds[:elite_num]]
         self.population.set_individuals(elites + selected_inds[:self.population.pop_size-elite_num])
@@ -79,20 +80,20 @@ class GeneticAlgorithm:
         mutated = [self.mutate_func(ind[:], self.mutation_rate) for ind in individuals]
         self.population.set_individuals(mutated)
 
-    def evolve_1time(self, elite_ratio=0.05):
-        self.selection(elite_ratio)
+    def evolve_1time(self):
+        self.selection()
         self.crossover_population()
         self.mutate_population()
         self.generation += 1
 
-    def evolve(self, generations=1, elite_ratio=0.05):
+    def evolve(self, generations=1):
         if generations <= 0:
             raise ValueError("进化代数必须大于0")
         if generations >= GENERATIONS:
             generations = GENERATIONS
         for _ in range(generations):
             self.record_generation(PATH)
-            self.evolve_1time(elite_ratio)
+            self.evolve_1time()
 
     def init_csv(self, path=PATH):
         with open(path, 'w', newline='', encoding='utf-8') as f:
